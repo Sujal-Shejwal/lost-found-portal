@@ -1,0 +1,70 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -260px;
+  width: 260px;
+  height: 100vh;
+  background: #faf7f2;
+  padding: 20px;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+  transition: left 0.3s ease;
+  z-index: 1200;
+}
+
+.sidebar.open {
+  left: 0;
+}
+
+.sidebar-header {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 25px;
+}
+
+/* Links */
+.sidebar-links a {
+  display: block;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  color: #111;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+/* ✅ Hover */
+.sidebar-links a:hover {
+  background: #f0e6db;
+}
+
+/* ✅ Active */
+.sidebar-links a.active {
+  color: #8b2c2c;
+  font-weight: 600;
+}
+
+/* Footer */
+.sidebar-footer {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+}
+
+.logout-btn {
+  width: 100%;
+  background: #8b2c2c;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 30px;
+  font-size: 15px;
+  cursor: pointer;
+}
+/* overlay for click outside */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  z-index: 1100;
+}

@@ -1,0 +1,39 @@
+.navbar {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 1200px;
+  height: 60px;
+
+  background: rgba(30, 41, 59, 0.85);
+  backdrop-filter: blur(12px);
+
+  border-radius: 18px;
+  padding: 0 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-links a {
+  margin: 0 12px;
+  color: #c7d2fe;
+  text-decoration: none;
+}
+
+.nav-links a.active {
+  color: #3b82f6;
+  font-weight: bold;
+}
+
+.logout {
+  background: #ef4444;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+}

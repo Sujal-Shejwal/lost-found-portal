@@ -1,0 +1,26 @@
+/* 🔥 REMOVE TOP STRIP COMPLETELY */
+.topbar {
+  display: none;
+}
+
+/* ✅ SINGLE WORKING HAMBURGER */
+.hamburger-btn {
+  position: fixed;
+  top: 18px;
+  left: 18px;
+  z-index: 1400;
+
+  background: #ffffff;
+  border: none;
+  padding: 10px 12px;
+  border-radius: 10px;
+
+  font-size: 20px;
+  cursor: pointer;
+
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+.hamburger-btn:hover {
+  transform: scale(1.05);
+}

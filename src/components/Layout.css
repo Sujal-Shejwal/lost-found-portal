@@ -1,0 +1,17 @@
+.main-content {
+  padding: 20px;
+}
+
+/* CLICK OUTSIDE OVERLAY */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  z-index: 1100;
+}
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  z-index: 1100;
+}

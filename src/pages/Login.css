@@ -1,0 +1,206 @@
+/* =========================
+   PAGE
+========================= */
+.login-wrapper {
+  min-height: 100vh;
+  background: #efede7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================
+   CARD
+========================= */
+.login-card {
+  background: #f9f8f6;
+  width: 390px;
+  padding: 44px;
+  border-radius: 16px;
+  border: 1px solid #d6d3cd;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15);
+  transition: 
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+/* Card hover = depth */
+.login-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
+}
+
+/* =========================
+   TEXT
+========================= */
+.login-title {
+  text-align: center;
+  color: #1c1c1c;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.login-subtitle {
+  text-align: center;
+  color: #5f5f5f;
+  margin-bottom: 26px;
+  font-size: 14px;
+}
+
+/* =========================
+   GOOGLE BUTTON
+========================= */
+.google-btn {
+  width: 100%;
+  padding: 13px;
+  border-radius: 999px;
+  border: 1px solid #d6d3cd;
+  background: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  color: #1c1c1c;
+
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.google-btn img {
+  width: 18px;
+  height: 18px;
+}
+
+/* Google hover = soft lift */
+.google-btn:hover {
+  background: #f2f1ec;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Disabled state */
+.google-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =========================
+   DIVIDER
+========================= */
+.divider {
+  text-align: center;
+  color: #5f5f5f;
+  margin: 18px 0;
+  font-size: 13px;
+}
+
+/* =========================
+   INPUTS
+========================= */
+.login-card input {
+  width: 100%;
+  padding: 13px 14px;
+  margin-bottom: 16px;
+  border-radius: 10px;
+  border: 1px solid #d6d3cd;
+  background: #ffffff;
+  color: #1c1c1c;
+  font-size: 14px;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+/* Input focus = ink highlight */
+.login-card input:focus {
+  border-color: #2f4858;
+  box-shadow: 0 0 0 3px rgba(47, 72, 88, 0.15);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+/* =========================
+   LOGIN BUTTON
+========================= */
+.login-btn {
+  width: 100%;
+  padding: 13px;
+  border-radius: 999px;
+  border: none;
+  background: #8b2e2f;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    box-shadow 0.25s ease,
+    transform 0.2s ease;
+}
+
+/* Login hover = confidence */
+.login-btn:hover {
+  background: #762526;
+  box-shadow: 0 12px 30px rgba(139, 46, 47, 0.4);
+  transform: translateY(-2px);
+}
+
+.login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* =========================
+   LINKS
+========================= */
+.login-links {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+  font-size: 13px;
+}
+
+.login-links span {
+  color: #2f4858;
+  cursor: pointer;
+  position: relative;
+}
+
+/* Link hover underline animation */
+.login-links span::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0;
+  height: 1px;
+  background: #2f4858;
+  transition: width 0.25s ease;
+}
+
+.login-links span:hover::after {
+  width: 100%;
+}
+
+/* =========================
+   MESSAGE
+========================= */
+.login-message {
+  margin-top: 16px;
+  padding: 10px;
+  background: #f3e1e1;
+  color: #8b2e2f;
+  border-radius: 8px;
+  font-size: 13px;
+  text-align: center;
+}
