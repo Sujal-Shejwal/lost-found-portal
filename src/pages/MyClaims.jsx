@@ -1,85 +1,61 @@
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import { db } from "../firebase";
-import Sidebar from "../components/Sidebar";
-import "./Dashboard.css";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { auth, db } from "../firebase";
+import "./Items.css";
 
 function MyClaims() {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [claims, setClaims] = useState([]);
 
   useEffect(() => {
-    let isMounted = true;
+    const user = auth.currentUser;
+    if (!user) return;
 
-    const fetchClaims = async () => {
-      try {
-        const q = query(
-          collection(db, "claims"),
-          orderBy("createdAt", "desc")
-        );
-        const snapshot = await getDocs(q);
+    const q = query(
+      collection(db, "claims"),
+      where("userId", "==", user.uid)
+    );
 
-        if (isMounted) {
-          setClaims(
-            snapshot.docs.map(doc => ({
-              id: doc.id,
-              ...doc.data(),
-            }))
-          );
-        }
-      } catch (err) {
-        console.error("Error fetching claims:", err);
-      }
-    };
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setClaims(data);
+    });
 
-    fetchClaims();
-
-    return () => {
-      isMounted = false;
-    };
+    return () => unsubscribe();
   }, []);
 
   return (
-    <>
-      {/* HAMBURGER – SAME AS DASHBOARD */}
-      <button
-        onClick={() => setMenuOpen(true)}
-        style={{
-          position: "fixed",
-          top: "20px",
-          left: "20px",
-          fontSize: "22px",
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          color: "#2f4858",
-          zIndex: 200,
-        }}
-      >
-        ☰
-      </button>
+    <div className="items-page">
+      <h2>My Claims</h2>
 
-      <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
+      {claims.length === 0 ? (
+        <p className="empty-text">No claims submitted yet.</p>
+      ) : (
+        <div className="items-grid">
+          {claims.map((item) => (
+            <div className="item-card" key={item.id}>
+              {item.image && (
+                <img src={item.image} alt="" className="item-image" />
+              )}
 
-      <div className="dashboard-wrapper">
-        <div className="dashboard-header">
-          <h2>My Claims</h2>
-        </div>
+              <span className="status-badge status-pending">
+                {item.status}
+              </span>
 
-        {claims.length === 0 ? (
-          <div className="empty-state">
-            No claims submitted yet.
-          </div>
-        ) : (
-          claims.map(claim => (
-            <div key={claim.id} className="action-card">
-              <h3>{claim.itemTitle || "Claimed Item"}</h3>
-              <p>Status: {claim.status || "Pending"}</p>
+              <h3>{item.itemTitle}</h3>
+              <p className="item-desc">{item.description}</p>
+
+              <div className="item-meta">
+                <span>📍 {item.location}</span>
+                <span>📅 {item.date}</span>
+              </div>
             </div>
-          ))
-        )}
-      </div>
-    </>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

@@ -1,103 +1,102 @@
 import { useEffect, useState } from "react";
-import { db } from "../firebase";
 import {
   collection,
-  getDocs,
-  query,
-  orderBy,
-  deleteDoc,
-  doc,
+  onSnapshot,
+  addDoc,
+  serverTimestamp,
 } from "firebase/firestore";
-import "./LostItems.css";
+import { auth, db } from "../firebase";
+import "./Items.css";
 
 function LostItems() {
   const [items, setItems] = useState([]);
 
-  const fetchItems = async () => {
-    const q = query(
-      collection(db, "lostItems"),
-      orderBy("createdAt", "desc")
-    );
-    const snapshot = await getDocs(q);
-
-    setItems(
-      snapshot.docs.map((doc) => ({
+  // 🔹 Fetch lost items from Firestore
+  useEffect(() => {
+    const unsub = onSnapshot(collection(db, "lostItems"), (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-      }))
-    );
-  };
+      }));
+      setItems(data);
+    });
 
-  useEffect(() => {
-    fetchItems();
+    return () => unsub();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this lost item?")) return;
-    await deleteDoc(doc(db, "lostItems", id));
-    fetchItems();
+  // 🔹 Claim item (THIS WAS MISSING EARLIER)
+  const handleClaim = async (item) => {
+    const user = auth.currentUser;
+    if (!user) {
+      alert("Please login to claim an item");
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "claims"), {
+        userId: user.uid,
+        itemId: item.id,
+        itemTitle: item.title,
+        description: item.description,
+        location: item.location,
+        date: item.date,
+        image: item.image || "",
+        status: "Pending",
+        createdAt: serverTimestamp(),
+      });
+
+      alert("✅ Claim submitted successfully");
+    } catch (err) {
+      console.error(err);
+      alert("❌ Failed to submit claim");
+    }
   };
 
   return (
-    <div className="lost-wrapper">
-      <h2 className="lost-title">Lost Items</h2>
+    <div className="items-page">
+      <h2>Lost Items</h2>
 
-      {items.length === 0 && (
-        <div className="lost-empty">No lost items reported.</div>
-      )}
-
-      <div className="lost-grid">
-        {items.map((item) => (
-          <div className="lost-card" key={item.id}>
-            {/* ✅ IMAGE */}
-            {item.imageUrl && (
-              <img
-                src={item.imageUrl}
-                alt={item.title}
-                className="lost-image"
-              />
-            )}
-
-            <div className="lost-content">
-              {/* ✅ TITLE */}
-              <h3>{item.title || "Untitled Item"}</h3>
-
-              {/* ✅ CATEGORY */}
-              {item.category && (
-                <span className="lost-category">
-                  {item.category}
-                </span>
+      {items.length === 0 ? (
+        <p className="empty-text">No lost items reported yet.</p>
+      ) : (
+        <div className="items-grid">
+          {items.map((item) => (
+            <div className="item-card" key={item.id}>
+              {/* IMAGE */}
+              {item.image && (
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  className="item-image"
+                />
               )}
 
-              {/* ✅ DESCRIPTION */}
-              <p className="lost-desc">
+              {/* TITLE */}
+              <h3>{item.title}</h3>
+
+              {/* DESCRIPTION */}
+              <p className="item-desc">
                 {item.description || "No description provided"}
               </p>
 
-              {/* ✅ META */}
-              <div className="lost-meta">
-                <span>📍 {item.location || "Unknown location"}</span>
-                <span>📅 {item.date || "No date"}</span>
+              {/* META INFO */}
+              <div className="item-meta">
+                <span>📍 {item.location}</span>
+                <span>📅 {item.date}</span>
+                <span>📂 {item.category}</span>
               </div>
 
-              {/* ✅ PHONE */}
-              {item.phone && (
-                <div className="lost-phone">
-                  📞 {item.phone}
-                </div>
-              )}
-
-              {/* ✅ DELETE */}
+              {/* CLAIM BUTTON */}
               <button
-                className="lost-delete"
-                onClick={() => handleDelete(item.id)}
+                className="item-delete"
+                onClick={() => handleClaim(item)}
               >
-                Delete
+                Claim this item
               </button>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

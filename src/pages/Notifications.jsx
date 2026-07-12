@@ -1,84 +1,47 @@
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import { db } from "../firebase";
-import Sidebar from "../components/Sidebar";
-import "./Dashboard.css";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { auth, db } from "../firebase";
+import "./Items.css";
 
 function Notifications() {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    let isMounted = true;
+    const user = auth.currentUser;
+    if (!user) return;
 
-    const fetchNotifications = async () => {
-      try {
-        const q = query(
-          collection(db, "notifications"),
-          orderBy("createdAt", "desc")
-        );
-        const snapshot = await getDocs(q);
+    const q = query(
+      collection(db, "notifications"),
+      where("userId", "==", user.uid)
+    );
 
-        if (isMounted) {
-          setNotifications(
-            snapshot.docs.map(doc => ({
-              id: doc.id,
-              ...doc.data(),
-            }))
-          );
-        }
-      } catch (err) {
-        console.error("Error fetching notifications:", err);
-      }
-    };
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setNotifications(data);
+    });
 
-    fetchNotifications();
-
-    return () => {
-      isMounted = false;
-    };
+    return () => unsubscribe();
   }, []);
 
   return (
-    <>
-      {/* HAMBURGER – SAME AS DASHBOARD */}
-      <button
-        onClick={() => setMenuOpen(true)}
-        style={{
-          position: "fixed",
-          top: "20px",
-          left: "20px",
-          fontSize: "22px",
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          color: "#2f4858",
-          zIndex: 200,
-        }}
-      >
-        ☰
-      </button>
+    <div className="items-page">
+      <h2>Notifications</h2>
 
-      <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
-
-      <div className="dashboard-wrapper">
-        <div className="dashboard-header">
-          <h2>Notifications</h2>
-        </div>
-
-        {notifications.length === 0 ? (
-          <div className="empty-state">
-            No notifications available.
-          </div>
-        ) : (
-          notifications.map(note => (
-            <div key={note.id} className="action-card">
+      {notifications.length === 0 ? (
+        <p className="empty-text">No notifications yet.</p>
+      ) : (
+        <div className="items-grid">
+          {notifications.map((note) => (
+            <div className="notification-card" key={note.id}>
               <p>{note.message}</p>
             </div>
-          ))
-        )}
-      </div>
-    </>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
