@@ -11,17 +11,27 @@ export default function Layout({ children }) {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await signOut(auth);
-    navigate("/login");
+    try {
+      await signOut(auth);
+      navigate("/");
+    } catch (error) {
+      console.error("Logout Error:", error);
+    }
   };
 
   return (
     <>
-      <Topbar onMenuClick={() => setSidebarOpen(true)} />
+      <Topbar
+        onMenuClick={() => setSidebarOpen(true)}
+        onLogout={handleLogout}
+      />
 
-      <Sidebar open={sidebarOpen} onLogout={handleLogout} />
+      <Sidebar
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        onLogout={handleLogout}
+      />
 
-      {/* Overlay – click outside closes sidebar */}
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}

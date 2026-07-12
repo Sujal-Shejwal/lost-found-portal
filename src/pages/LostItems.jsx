@@ -11,24 +11,26 @@ import "./Items.css";
 function LostItems() {
   const [items, setItems] = useState([]);
 
-  // 🔹 Fetch lost items from Firestore
+  // Fetch Lost Items
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "lostItems"), (snapshot) => {
+    const unsubscribe = onSnapshot(collection(db, "lostItems"), (snapshot) => {
       const data = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
+
       setItems(data);
     });
 
-    return () => unsub();
+    return () => unsubscribe();
   }, []);
 
-  // 🔹 Claim item (THIS WAS MISSING EARLIER)
+  // Claim Item
   const handleClaim = async (item) => {
     const user = auth.currentUser;
+
     if (!user) {
-      alert("Please login to claim an item");
+      alert("Please login to claim an item.");
       return;
     }
 
@@ -37,17 +39,18 @@ function LostItems() {
         userId: user.uid,
         itemId: item.id,
         itemTitle: item.title,
-        description: item.description,
-        location: item.location,
-        date: item.date,
-        image: item.image || "",
+        description: item.description || "",
+        location: item.location || "",
+        date: item.date || "",
+        category: item.category || "",
+        image: item.imageUrl || "",
         status: "Pending",
         createdAt: serverTimestamp(),
       });
 
       alert("✅ Claim submitted successfully");
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error("Claim Error:", error);
       alert("❌ Failed to submit claim");
     }
   };
@@ -62,31 +65,31 @@ function LostItems() {
         <div className="items-grid">
           {items.map((item) => (
             <div className="item-card" key={item.id}>
-              {/* IMAGE */}
-              {item.image && (
+              {/* Image */}
+              {item.imageUrl && (
                 <img
-                  src={item.image}
+                  src={item.imageUrl}
                   alt={item.title}
                   className="item-image"
                 />
               )}
 
-              {/* TITLE */}
+              {/* Title */}
               <h3>{item.title}</h3>
 
-              {/* DESCRIPTION */}
+              {/* Description */}
               <p className="item-desc">
                 {item.description || "No description provided"}
               </p>
 
-              {/* META INFO */}
+              {/* Meta Information */}
               <div className="item-meta">
-                <span>📍 {item.location}</span>
-                <span>📅 {item.date}</span>
-                <span>📂 {item.category}</span>
+                <span>📍 {item.location || "N/A"}</span>
+                <span>📅 {item.date || "N/A"}</span>
+                <span>📂 {item.category || "Other"}</span>
               </div>
 
-              {/* CLAIM BUTTON */}
+              {/* Claim Button */}
               <button
                 className="item-delete"
                 onClick={() => handleClaim(item)}

@@ -1,26 +1,241 @@
-/* 🔥 REMOVE TOP STRIP COMPLETELY */
+/* Hide old top bar */
 .topbar {
   display: none;
 }
 
-/* ✅ SINGLE WORKING HAMBURGER */
+/* Hamburger */
 .hamburger-btn {
   position: fixed;
-  top: 18px;
-  left: 18px;
-  z-index: 1400;
+  top: 20px;
+  left: 20px;
+  z-index: 1500;
+
+  width: 46px;
+  height: 46px;
+
+  border: none;
+  border-radius: 12px;
 
   background: #ffffff;
-  border: none;
-  padding: 10px 12px;
-  border-radius: 10px;
 
-  font-size: 20px;
+  font-size: 22px;
   cursor: pointer;
 
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 8px 18px rgba(0,0,0,.15);
+
+  transition: .25s;
 }
 
-.hamburger-btn:hover {
-  transform: scale(1.05);
+.hamburger-btn:hover{
+    transform:scale(1.05);
+}
+
+
+/* ========================= */
+/* PROFILE */
+/* ========================= */
+
+.profile-wrapper{
+    position:fixed;
+
+    top:22px;
+    right:40px;
+
+    z-index:1500;
+}
+
+.profile-btn{
+
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    border:none;
+    cursor:pointer;
+
+    padding:8px 14px;
+
+    border-radius:40px;
+
+    background:#fff;
+
+    box-shadow:0 8px 20px rgba(0,0,0,.15);
+
+    transition:.25s;
+}
+
+.profile-btn:hover{
+
+    transform:translateY(-2px);
+
+}
+
+.profile-img,
+.dropdown-img{
+
+    width:42px;
+    height:42px;
+
+    border-radius:50%;
+
+    object-fit:cover;
+}
+
+.profile-avatar,
+.dropdown-avatar{
+
+    width:42px;
+    height:42px;
+
+    border-radius:50%;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:#9c3636;
+
+    color:#fff;
+
+    font-weight:700;
+}
+
+.profile-name{
+
+    font-size:15px;
+    font-weight:600;
+
+    color:#222;
+}
+
+.arrow{
+
+    font-size:12px;
+}
+
+
+/* ========================= */
+/* DROPDOWN */
+/* ========================= */
+
+.profile-dropdown{
+
+    position:absolute;
+
+    top:68px;
+    right:0;
+
+    width:230px;
+
+    background:#fff;
+
+    border-radius:16px;
+
+    overflow:hidden;
+
+    box-shadow:0 14px 35px rgba(0,0,0,.18);
+
+    animation:drop .25s ease;
+}
+
+@keyframes drop{
+
+from{
+
+opacity:0;
+transform:translateY(-10px);
+
+}
+
+to{
+
+opacity:1;
+transform:translateY(0);
+
+}
+
+}
+
+.profile-header{
+
+display:flex;
+
+gap:14px;
+
+align-items:center;
+
+padding:18px;
+
+}
+
+.profile-header strong{
+
+font-size:16px;
+
+color:#222;
+
+display:block;
+
+margin-bottom:4px;
+
+}
+
+.profile-header p{
+
+font-size:13px;
+
+color:#777;
+
+word-break:break-word;
+
+}
+
+.profile-dropdown hr{
+
+border:none;
+
+border-top:1px solid #ececec;
+
+margin:0;
+
+}
+
+.dropdown-item{
+
+width:100%;
+
+padding:15px 18px;
+
+background:white;
+
+border:none;
+
+cursor:pointer;
+
+text-align:left;
+
+font-size:15px;
+
+transition:.2s;
+
+display:flex;
+
+align-items:center;
+
+gap:10px;
+
+}
+
+.dropdown-item:hover{
+
+background:#f8f4ee;
+
+}
+
+.logout{
+
+color:#9c3636;
+
+font-weight:600;
+
 }
