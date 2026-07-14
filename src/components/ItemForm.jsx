@@ -70,6 +70,10 @@ function ItemForm({ type, item, errors, isSubmitting, onChange, onSubmit }) {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const handleChangePhotoClick = () => {
+    if (fileInputRef.current) fileInputRef.current.click();
+  };
+
   return (
     <div className={`action-card ${isLost ? "action-card-lost" : "action-card-found"}`}>
       <div className="action-card-heading">
@@ -174,24 +178,34 @@ function ItemForm({ type, item, errors, isSubmitting, onChange, onSubmit }) {
           Photo
         </label>
 
+        {/* Hidden file input is always mounted so a new photo can be
+            selected both before AND after a preview exists. */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          disabled={isSubmitting}
+          className="upload-box-input-hidden"
+        />
+
         {!previewUrl ? (
-          <label className={`upload-box ${isSubmitting ? "upload-box-disabled" : ""}`}>
+          <label
+            className={`upload-box ${isSubmitting ? "upload-box-disabled" : ""}`}
+            onClick={(e) => {
+              // prevent double-firing since the hidden input is separate now
+              e.preventDefault();
+              if (!isSubmitting) handleChangePhotoClick();
+            }}
+          >
             <FiUploadCloud className="upload-box-icon" />
             <span className="upload-box-title">Click to upload a photo</span>
             <span className="upload-box-subtitle">PNG or JPG</span>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              disabled={isSubmitting}
-              className="upload-box-input"
-            />
           </label>
         ) : (
-          <div className="image-preview">
-            <img src={previewUrl} alt="Preview" className="image-preview-img" />
-            <div className="image-preview-overlay">
+          <div className="upload-box upload-box-has-preview">
+            <div className="image-preview">
+              <img src={previewUrl} alt="Preview" className="image-preview-img" />
               <span className="image-preview-badge">
                 <FiCheck /> Selected
               </span>
@@ -203,6 +217,31 @@ function ItemForm({ type, item, errors, isSubmitting, onChange, onSubmit }) {
                   aria-label="Remove image"
                 >
                   <FiX />
+                </button>
+              )}
+            </div>
+
+            <span className="image-preview-filename" title={item.image?.name}>
+              {item.image?.name}
+            </span>
+
+            <div className="image-preview-actions">
+              {!isSubmitting && (
+                <button
+                  type="button"
+                  className="image-preview-change-btn"
+                  onClick={handleChangePhotoClick}
+                >
+                  Change Photo
+                </button>
+              )}
+              {!isSubmitting && (
+                <button
+                  type="button"
+                  className="image-preview-remove-btn"
+                  onClick={handleRemoveImage}
+                >
+                  <FiX /> Remove Image
                 </button>
               )}
             </div>
