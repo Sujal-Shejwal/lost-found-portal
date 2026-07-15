@@ -577,3 +577,172 @@
     gap: 18px;
   }
 }
+/* =========================
+   BUTTON HEIGHT CONSISTENCY
+========================= */
+.item-claim-btn,
+.items-btn-secondary,
+.items-btn-danger {
+  height: 46px;
+}
+
+.item-claim-btn:disabled {
+  opacity: 0.7;
+}
+
+/* =========================
+   SPINNER
+========================= */
+.btn-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: itemsSpin 0.7s linear infinite;
+}
+
+@keyframes itemsSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================
+   IMAGE HOVER
+========================= */
+.item-card-image {
+  cursor: zoom-in;
+}
+
+.item-card-image:focus-visible {
+  outline: 3px solid #8b2e2f;
+  outline-offset: -3px;
+}
+
+/* =========================
+   MODAL OVERLAY (shared)
+========================= */
+.items-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 100;
+  animation: itemsFadeIn 0.2s ease;
+}
+
+/* =========================
+   CONFIRM MODAL
+========================= */
+.items-confirm-modal {
+  background: #f9f8f6;
+  border-radius: 18px;
+  padding: 28px 26px;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+
+.items-confirm-modal h4 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  color: #1c1c1c;
+}
+
+.items-confirm-modal p {
+  margin: 0 0 20px 0;
+  font-size: 14px;
+  color: #6b6b6b;
+}
+
+.items-confirm-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.items-btn-secondary,
+.items-btn-danger {
+  flex: 1;
+  border-radius: 999px;
+  border: none;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.25s ease;
+}
+
+.items-btn-secondary {
+  background: #efede7;
+  color: #1c1c1c;
+}
+
+.items-btn-secondary:hover:not(:disabled) {
+  background: #e2ded5;
+}
+
+.items-btn-danger {
+  background: #8b2e2f;
+  color: #ffffff;
+}
+
+.items-btn-danger:hover:not(:disabled) {
+  background: #762526;
+  box-shadow: 0 12px 30px rgba(139, 46, 47, 0.4);
+  transform: translateY(-2px);
+}
+
+.items-btn-secondary:disabled,
+.items-btn-danger:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* =========================
+   LIGHTBOX
+========================= */
+.items-lightbox {
+  position: relative;
+  max-width: 90vw;
+  max-height: 85vh;
+}
+
+.items-lightbox img {
+  max-width: 90vw;
+  max-height: 85vh;
+  border-radius: 14px;
+  display: block;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.items-lightbox-close {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: #8b2e2f;
+  color: #ffffff;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+  transition: background 0.2s ease;
+}
+
+.items-lightbox-close:hover {
+  background: #762526;
+}
