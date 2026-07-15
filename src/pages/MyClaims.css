@@ -1,0 +1,12 @@
+/* Status badges specific to claims */
+.status-pending-badge {
+  background: #b3862c;
+}
+
+.status-approved-badge {
+  background: #3f7a4d;
+}
+
+.status-rejected-badge {
+  background: #8b2e2f;
+}

@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import LostItems from "./pages/LostItems";
 import FoundItems from "./pages/FoundItems";
+import MyClaims from "./pages/MyClaims";
 import Layout from "./components/Layout";
 
 function App() {
@@ -72,6 +73,23 @@ function App() {
             )
           }
         />
+
+        {/* ✅ MY CLAIMS — newly added */}
+        <Route
+          path="/claims"
+          element={
+            user ? (
+              <Layout>
+                <MyClaims />
+              </Layout>
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+
+        {/* ✅ Optional: catch-all so unknown paths don't render a blank screen */}
+        <Route path="*" element={<Navigate to={user ? "/dashboard" : "/"} />} />
       </Routes>
     </BrowserRouter>
   );

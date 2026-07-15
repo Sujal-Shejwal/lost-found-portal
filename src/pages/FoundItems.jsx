@@ -1,5 +1,15 @@
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, deleteDoc, doc } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  deleteDoc,
+  doc,
+  addDoc,
+  query,
+  where,
+  getDocs,
+  serverTimestamp,
+} from "firebase/firestore";
 import toast from "react-hot-toast";
 import { auth, db } from "../firebase";
 import "./Items.css";
@@ -24,6 +34,7 @@ function FoundItems() {
   const [deletingId, setDeletingId] = useState(null);
   const [confirmTarget, setConfirmTarget] = useState(null); // item pending delete
   const [lightboxImage, setLightboxImage] = useState(null);
+  const [claimingId, setClaimingId] = useState(null); // item currently being claimed
 
   const loadItems = () => {
     setIsLoading(true);
@@ -92,10 +103,55 @@ function FoundItems() {
     }
   };
 
-  const handleClaim = (item) => {
-    // Placeholder hook for whatever your claim flow does today —
-    // swap this out for the real claim logic if it lives elsewhere.
-    toast.success("Claim submitted");
+  const handleClaim = async (item) => {
+    const user = auth.currentUser;
+    if (!user) {
+      toast.error("You must be logged in to claim an item");
+      return;
+    }
+
+    if (claimingId) return; // prevent double-clicks / concurrent claims
+
+    setClaimingId(item.id);
+    try {
+      // Prevent duplicate pending claims by the same user for the same item
+      const existingClaimsQuery = query(
+        collection(db, "claims"),
+        where("userId", "==", user.uid),
+        where("itemId", "==", item.id),
+        where("status", "==", "Pending")
+      );
+
+      const existingSnapshot = await getDocs(existingClaimsQuery);
+
+      if (!existingSnapshot.empty) {
+        toast.error("You already have a pending claim for this item");
+        return;
+      }
+
+      await addDoc(collection(db, "claims"), {
+        itemId: item.id,
+        userId: user.uid,
+        userEmail: user.email || "",
+        userName: user.displayName || "",
+        status: "Pending",
+        createdAt: serverTimestamp(),
+        itemTitle: item.title || "",
+        description: item.description || "",
+        category: item.category || "",
+        location: item.location || "",
+        date: item.date || "",
+        phone: item.phone || "",
+        imageUrl: item.image || "",
+      });
+
+      toast.success("Claim submitted");
+    } catch (err) {
+      console.error("Failed to submit claim:", err);
+      toast.error("Something went wrong while submitting your claim");
+    } finally {
+      setClaimingId(null);
+    }
   };
 
   const filteredItems = items.filter((item) => {
@@ -210,6 +266,7 @@ function FoundItems() {
           {filteredItems.map((item) => {
             const isOwner = auth.currentUser?.uid === item.userId;
             const isDeleting = deletingId === item.id;
+            const isClaiming = claimingId === item.id;
 
             return (
               <div className="item-card" key={item.id}>
@@ -285,8 +342,17 @@ function FoundItems() {
                     <button
                       className="item-claim-btn"
                       onClick={() => handleClaim(item)}
+                      disabled={isClaiming}
+                      aria-busy={isClaiming}
                     >
-                      🙋 Claim Item
+                      {isClaiming ? (
+                        <>
+                          <span className="btn-spinner" aria-hidden="true" />
+                          Submitting...
+                        </>
+                      ) : (
+                        <>🙋 Claim Item</>
+                      )}
                     </button>
                   )}
                 </div>
