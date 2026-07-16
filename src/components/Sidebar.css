@@ -1,3 +1,9 @@
+:root {
+  --z-overlay: 1000;
+  --z-sidebar: 1100;
+  --z-topbar: 1200;
+}
+
 .sidebar {
   position: fixed;
   top: 0;
@@ -8,16 +14,20 @@
 
   background: #faf7f2;
 
-  padding: 22px;
+  /* Reserve space at the top so content clears the hamburger button
+     (button top:20px + 46px height + 20px breathing room) */
+  padding: 96px 22px 22px 22px;
 
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
 
   transition: left 0.3s ease;
 
-  z-index: 1200;
+  z-index: var(--z-sidebar);
 
   display: flex;
   flex-direction: column;
+
+  overflow-y: auto;
 }
 
 .sidebar.open {
@@ -126,5 +136,16 @@
 
   background: transparent;
 
-  z-index: 1100;
+  z-index: var(--z-overlay);
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: 240px;
+    padding-top: 88px;
+  }
 }

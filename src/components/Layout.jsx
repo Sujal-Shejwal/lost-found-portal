@@ -34,13 +34,8 @@ export default function Layout({ children }) {
 
       {sidebarOpen && (
         <div
+          className="sidebar-overlay"
           onClick={() => setSidebarOpen(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.25)",
-            zIndex: 1100,
-          }}
         />
       )}
 
