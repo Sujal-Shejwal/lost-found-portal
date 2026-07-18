@@ -25,6 +25,11 @@ import {
   FiMenu,
   FiCalendar,
   FiList,
+  FiMapPin,
+  FiActivity,
+  FiInbox,
+  FiArrowUpRight,
+  FiImage,
 } from "react-icons/fi";
 import "./Dashboard.css";
 
@@ -51,6 +56,33 @@ const getFormattedDate = () => {
   return `${weekday}, ${day} ${month} ${year}`;
 };
 
+// Formats a Firestore Timestamp (or missing value) into a short relative-ish string,
+// e.g. "Today", "Yesterday", or "13 Jul". Falls back to "—" if there's no timestamp.
+const formatTimelineDate = (createdAt) => {
+  if (!createdAt?.toMillis) return "—";
+  const date = new Date(createdAt.toMillis());
+  const now = new Date();
+
+  const isSameDay =
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear();
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const isYesterday =
+    date.getDate() === yesterday.getDate() &&
+    date.getMonth() === yesterday.getMonth() &&
+    date.getFullYear() === yesterday.getFullYear();
+
+  if (isSameDay) {
+    return date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  }
+  if (isYesterday) return "Yesterday";
+
+  return date.toLocaleDateString("en-US", { day: "numeric", month: "short" });
+};
+
 function Dashboard() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [userName, setUserName] = useState("");
@@ -67,11 +99,22 @@ function Dashboard() {
 
   // ===== Dashboard statistics =====
   const [stats, setStats] = useState({ lost: 0, found: 0, claimed: 0, pending: 0 });
+  // Secondary "this week" counters used purely for helper text under each stat card.
+  const [statsThisWeek, setStatsThisWeek] = useState({ lost: 0, found: 0, claimed: 0, pending: 0 });
   const [statsLoading, setStatsLoading] = useState(true);
 
-  // ===== Recent activity =====
+  // ===== Recent activity (combined lost + found for current user) =====
   const [recentActivity, setRecentActivity] = useState([]);
   const [activityLoading, setActivityLoading] = useState(true);
+
+  // ===== Latest Lost / Found items (global, newest 3 each) =====
+  const [latestLost, setLatestLost] = useState([]);
+  const [latestFound, setLatestFound] = useState([]);
+  const [latestLoading, setLatestLoading] = useState(true);
+
+  // ===== Pending claims summary (global) =====
+  const [pendingClaims, setPendingClaims] = useState([]);
+  const [pendingLoading, setPendingLoading] = useState(true);
 
   useEffect(() => {
     const user = auth.currentUser;
@@ -106,6 +149,45 @@ function Dashboard() {
         found: totalFound,
         claimed: totalClaimed,
         pending: totalPending,
+      });
+
+      // Best-effort "this week" counters purely for helper text — reuses the
+      // same collections/fields, filtered client-side by createdAt so no new
+      // Firestore indexes or queries are required beyond what already exists.
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+      const [lostDocsSnap, foundDocsSnap] = await Promise.all([
+        getDocs(query(collection(db, "lostItems"), orderBy("createdAt", "desc"), limit(50))),
+        getDocs(query(collection(db, "foundItems"), orderBy("createdAt", "desc"), limit(50))),
+      ]);
+
+      const countRecent = (snap) =>
+        snap.docs.filter((d) => {
+          const ts = d.data().createdAt;
+          return ts?.toMillis ? ts.toMillis() >= oneWeekAgo.getTime() : false;
+        }).length;
+
+      const countRecentClaimed = (snap) =>
+        snap.docs.filter((d) => {
+          const data = d.data();
+          const ts = data.createdAt;
+          return (
+            data.status === "claimed" &&
+            (ts?.toMillis ? ts.toMillis() >= oneWeekAgo.getTime() : false)
+          );
+        }).length;
+
+      const recentLost = countRecent(lostDocsSnap);
+      const recentFound = countRecent(foundDocsSnap);
+      const recentClaimed = countRecentClaimed(lostDocsSnap) + countRecentClaimed(foundDocsSnap);
+      const recentPending = Math.max(recentLost + recentFound - recentClaimed, 0);
+
+      setStatsThisWeek({
+        lost: recentLost,
+        found: recentFound,
+        claimed: recentClaimed,
+        pending: recentPending,
       });
     } catch (error) {
       console.error("Failed to fetch dashboard stats:", error);
@@ -168,10 +250,90 @@ function Dashboard() {
     }
   }, []);
 
+  // Fetches the newest 3 Lost items and newest 3 Found items (global, read-only preview)
+  const fetchLatestItems = useCallback(async () => {
+    setLatestLoading(true);
+    try {
+      const lostQuery = query(
+        collection(db, "lostItems"),
+        orderBy("createdAt", "desc"),
+        limit(3)
+      );
+      const foundQuery = query(
+        collection(db, "foundItems"),
+        orderBy("createdAt", "desc"),
+        limit(3)
+      );
+
+      const [lostSnap, foundSnap] = await Promise.all([
+        getDocs(lostQuery),
+        getDocs(foundQuery),
+      ]);
+
+      setLatestLost(lostSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      setLatestFound(foundSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    } catch (error) {
+      console.error("Failed to fetch latest items:", error);
+    } finally {
+      setLatestLoading(false);
+    }
+  }, []);
+
+  // Fetches a small summary of pending claims (status == "pending") across both collections
+  const fetchPendingClaims = useCallback(async () => {
+    setPendingLoading(true);
+    try {
+      const lostQuery = query(
+        collection(db, "lostItems"),
+        where("status", "==", "pending"),
+        orderBy("createdAt", "desc"),
+        limit(3)
+      );
+      const foundQuery = query(
+        collection(db, "foundItems"),
+        where("status", "==", "pending"),
+        orderBy("createdAt", "desc"),
+        limit(3)
+      );
+
+      const [lostSnap, foundSnap] = await Promise.all([
+        getDocs(lostQuery),
+        getDocs(foundQuery),
+      ]);
+
+      const lostDocs = lostSnap.docs.map((doc) => ({
+        id: doc.id,
+        type: "lost",
+        ...doc.data(),
+      }));
+      const foundDocs = foundSnap.docs.map((doc) => ({
+        id: doc.id,
+        type: "found",
+        ...doc.data(),
+      }));
+
+      const combined = [...lostDocs, ...foundDocs]
+        .sort((a, b) => {
+          const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+          const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+          return bTime - aTime;
+        })
+        .slice(0, 3);
+
+      setPendingClaims(combined);
+    } catch (error) {
+      console.error("Failed to fetch pending claims:", error);
+    } finally {
+      setPendingLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchStats();
     fetchRecentActivity();
-  }, [fetchStats, fetchRecentActivity]);
+    fetchLatestItems();
+    fetchPendingClaims();
+  }, [fetchStats, fetchRecentActivity, fetchLatestItems, fetchPendingClaims]);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -219,9 +381,11 @@ function Dashboard() {
       resetState(getInitialItemState()); // also clears the file input via re-render
       setErrors({});
 
-      // Refresh the stats and activity feed so the dashboard reflects the new item
+      // Refresh all dashboard sections so they reflect the new item
       fetchStats();
       fetchRecentActivity();
+      fetchLatestItems();
+      fetchPendingClaims();
     } catch (error) {
       console.error(error);
       alert(
@@ -237,6 +401,12 @@ function Dashboard() {
 
   const submitFoundItem = () =>
     submitItem("found", foundItem, setFoundErrors, setIsSubmittingFound, setFoundItem);
+
+  // Navigates to the relevant list page for a given claim/activity item so
+  // the person can see full detail. Uses existing routes only ("/lost" and "/found").
+  const goToItem = (type) => {
+    navigate(type === "lost" ? "/lost" : "/found");
+  };
 
   return (
     <>
@@ -257,8 +427,12 @@ function Dashboard() {
               {getGreeting()}, <span className="welcome-name">{userName}</span>{" "}
               <span className="wave">👋</span>
             </h2>
-            <p className="welcome-date">{getFormattedDate()}</p>
-            <p>Manage your lost and found items securely, all in one place.</p>
+            <p className="welcome-date">
+              <FiCalendar className="welcome-date-icon" /> {getFormattedDate()}
+            </p>
+            <p className="welcome-desc">
+              Manage your lost and found items securely, all in one place.
+            </p>
           </div>
         </div>
 
@@ -273,6 +447,11 @@ function Dashboard() {
                 {statsLoading ? <span className="skeleton-line skeleton-stat" /> : stats.lost}
               </span>
               <span className="stat-label">Total Lost Reports</span>
+              {!statsLoading && statsThisWeek.lost > 0 && (
+                <span className="stat-helper">
+                  <FiArrowUpRight /> +{statsThisWeek.lost} this week
+                </span>
+              )}
             </div>
           </div>
 
@@ -285,18 +464,11 @@ function Dashboard() {
                 {statsLoading ? <span className="skeleton-line skeleton-stat" /> : stats.found}
               </span>
               <span className="stat-label">Total Found Reports</span>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon stat-icon-claimed">
-              <FiCheckCircle />
-            </div>
-            <div className="stat-info">
-              <span className="stat-value">
-                {statsLoading ? <span className="skeleton-line skeleton-stat" /> : stats.claimed}
-              </span>
-              <span className="stat-label">Claimed Items</span>
+              {!statsLoading && statsThisWeek.found > 0 && (
+                <span className="stat-helper">
+                  <FiArrowUpRight /> +{statsThisWeek.found} this week
+                </span>
+              )}
             </div>
           </div>
 
@@ -309,6 +481,26 @@ function Dashboard() {
                 {statsLoading ? <span className="skeleton-line skeleton-stat" /> : stats.pending}
               </span>
               <span className="stat-label">Pending Claims</span>
+              {!statsLoading && stats.pending === 0 && (
+                <span className="stat-helper stat-helper-neutral">All clear</span>
+              )}
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon stat-icon-claimed">
+              <FiCheckCircle />
+            </div>
+            <div className="stat-info">
+              <span className="stat-value">
+                {statsLoading ? <span className="skeleton-line skeleton-stat" /> : stats.claimed}
+              </span>
+              <span className="stat-label">Completed Claims</span>
+              {!statsLoading && statsThisWeek.claimed > 0 && (
+                <span className="stat-helper">
+                  <FiArrowUpRight /> +{statsThisWeek.claimed} this week
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -335,52 +527,223 @@ function Dashboard() {
           />
         </div>
 
-        {/* ===== Recent Activity ===== */}
-        <h3 className="section-title">Recent Activity</h3>
+        {/* ===== Latest Lost / Found Items ===== */}
+        <h3 className="section-title">Latest Reports</h3>
+
+        <div className="latest-grid">
+          <div className="latest-column">
+            <div className="latest-column-heading">
+              <FiSearch className="latest-column-icon latest-column-icon-lost" />
+              <span>Latest Lost Items</span>
+            </div>
+
+            {latestLoading ? (
+              <div className="item-card-grid">
+                {[1, 2, 3].map((n) => (
+                  <div className="item-card item-card-skeleton" key={n}>
+                    <div className="skeleton-line skeleton-thumb" />
+                    <div className="skeleton-line skeleton-line-title" />
+                    <div className="skeleton-line skeleton-line-sub" />
+                  </div>
+                ))}
+              </div>
+            ) : latestLost.length === 0 ? (
+              <div className="empty-state empty-state-compact">
+                <FiSearch className="empty-state-icon" />
+                <span>No lost items reported yet.</span>
+              </div>
+            ) : (
+              <div className="item-card-grid">
+                {latestLost.map((it) => (
+                  <div className="item-card" key={it.id}>
+                    <div className="item-card-thumb">
+                      {it.imageUrl ? (
+                        <img src={it.imageUrl} alt={it.title} />
+                      ) : (
+                        <FiImage className="item-card-thumb-fallback" />
+                      )}
+                      <span className="activity-badge activity-badge-lost item-card-badge">
+                        Lost
+                      </span>
+                    </div>
+                    <div className="item-card-body">
+                      <span className="item-card-title">{it.title}</span>
+                      <span className="item-card-meta">
+                        <FiMapPin /> {it.location || "—"}
+                      </span>
+                      <span className="item-card-meta">
+                        <FiCalendar /> {it.date || "—"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="latest-column">
+            <div className="latest-column-heading">
+              <FiPackage className="latest-column-icon latest-column-icon-found" />
+              <span>Latest Found Items</span>
+            </div>
+
+            {latestLoading ? (
+              <div className="item-card-grid">
+                {[1, 2, 3].map((n) => (
+                  <div className="item-card item-card-skeleton" key={n}>
+                    <div className="skeleton-line skeleton-thumb" />
+                    <div className="skeleton-line skeleton-line-title" />
+                    <div className="skeleton-line skeleton-line-sub" />
+                  </div>
+                ))}
+              </div>
+            ) : latestFound.length === 0 ? (
+              <div className="empty-state empty-state-compact">
+                <FiPackage className="empty-state-icon" />
+                <span>No found items reported yet.</span>
+              </div>
+            ) : (
+              <div className="item-card-grid">
+                {latestFound.map((it) => (
+                  <div className="item-card" key={it.id}>
+                    <div className="item-card-thumb">
+                      {it.imageUrl ? (
+                        <img src={it.imageUrl} alt={it.title} />
+                      ) : (
+                        <FiImage className="item-card-thumb-fallback" />
+                      )}
+                      <span className="activity-badge activity-badge-found item-card-badge">
+                        Found
+                      </span>
+                    </div>
+                    <div className="item-card-body">
+                      <span className="item-card-title">{it.title}</span>
+                      <span className="item-card-meta">
+                        <FiMapPin /> {it.location || "—"}
+                      </span>
+                      <span className="item-card-meta">
+                        <FiCalendar /> {it.date || "—"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ===== Pending Claims Summary ===== */}
+        <h3 className="section-title">
+          <FiInbox className="section-title-icon" /> Pending Claims Summary
+        </h3>
 
         <div className="activity-section">
-          {activityLoading ? (
+          {pendingLoading ? (
             <div className="activity-list">
-              {[1, 2, 3].map((n) => (
+              {[1, 2].map((n) => (
                 <div className="activity-card activity-skeleton" key={n}>
                   <div className="skeleton-line skeleton-line-title" />
                   <div className="skeleton-line skeleton-line-sub" />
                 </div>
               ))}
             </div>
-          ) : recentActivity.length === 0 ? (
-            <div className="empty-state">No recent activity.</div>
+          ) : pendingClaims.length === 0 ? (
+            <div className="empty-state">
+              <FiCheckCircle className="empty-state-icon" />
+              <span>No pending claims right now — all caught up!</span>
+            </div>
           ) : (
             <div className="activity-list">
-              {recentActivity.map((activity) => (
-                <div className="activity-card" key={`${activity.type}-${activity.id}`}>
+              {pendingClaims.map((claim) => (
+                <div className="activity-card claim-card" key={`pending-${claim.type}-${claim.id}`}>
                   <div className="activity-card-top">
-                    <span className="activity-title">{activity.title}</span>
+                    <span className="activity-title">{claim.title}</span>
                     <span
                       className={`activity-badge ${
-                        activity.type === "lost" ? "activity-badge-lost" : "activity-badge-found"
+                        claim.type === "lost" ? "activity-badge-lost" : "activity-badge-found"
                       }`}
                     >
-                      {activity.type === "lost" ? "Lost" : "Found"}
+                      {claim.type === "lost" ? "Lost" : "Found"}
                     </span>
                   </div>
-
-                  <div className="activity-card-meta">
+                  <div className="activity-card-meta claim-card-meta">
                     <span className="activity-meta-item">
-                      <FiCalendar /> {activity.date || "—"}
+                      <FiCalendar /> {claim.date || "—"}
                     </span>
-                    <span className="activity-meta-item">
-                      <FiList /> {activity.category || "—"}
-                    </span>
-                    <span
-                      className={`activity-status ${
-                        activity.status === "claimed"
-                          ? "activity-status-claimed"
-                          : "activity-status-pending"
-                      }`}
+                    <span className="activity-status activity-status-pending">Pending</span>
+                    <button
+                      type="button"
+                      className="view-btn"
+                      onClick={() => goToItem(claim.type)}
                     >
-                      {activity.status === "claimed" ? "Claimed" : "Pending"}
-                    </span>
+                      View <FiArrowUpRight />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ===== Recent Activity ===== */}
+        <h3 className="section-title">
+          <FiActivity className="section-title-icon" /> Recent Activity
+        </h3>
+
+        <div className="activity-section">
+          {activityLoading ? (
+            <div className="timeline">
+              {[1, 2, 3].map((n) => (
+                <div className="timeline-item timeline-item-skeleton" key={n}>
+                  <span className="timeline-dot" />
+                  <div className="timeline-content">
+                    <div className="skeleton-line skeleton-line-title" />
+                    <div className="skeleton-line skeleton-line-sub" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : recentActivity.length === 0 ? (
+            <div className="empty-state">
+              <FiActivity className="empty-state-icon" />
+              <span>No recent activity yet. Submit a lost or found report to get started.</span>
+            </div>
+          ) : (
+            <div className="timeline">
+              {recentActivity.map((activity) => (
+                <div className="timeline-item" key={`${activity.type}-${activity.id}`}>
+                  <span
+                    className={`timeline-dot ${
+                      activity.type === "lost" ? "timeline-dot-lost" : "timeline-dot-found"
+                    }`}
+                  >
+                    {activity.type === "lost" ? <FiSearch /> : <FiPackage />}
+                  </span>
+                  <div className="timeline-content">
+                    <div className="timeline-content-top">
+                      <span className="timeline-title">
+                        {activity.type === "lost" ? "Lost item reported" : "Found item reported"}
+                        {": "}
+                        <strong>{activity.title}</strong>
+                      </span>
+                      <span className="timeline-timestamp">
+                        {formatTimelineDate(activity.createdAt)}
+                      </span>
+                    </div>
+                    <div className="timeline-content-meta">
+                      <span className="activity-meta-item">
+                        <FiList /> {activity.category || "—"}
+                      </span>
+                      <span
+                        className={`activity-status ${
+                          activity.status === "claimed"
+                            ? "activity-status-claimed"
+                            : "activity-status-pending"
+                        }`}
+                      >
+                        {activity.status === "claimed" ? "Claimed" : "Pending"}
+                      </span>
+                    </div>
                   </div>
                 </div>
               ))}

@@ -729,3 +729,680 @@
     min-height: 190px;
   }
 }
+
+/* =========================
+   NEW: HEADER POLISH
+   (adds icon + description styling without touching existing rules above)
+========================= */
+.welcome-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.welcome-date-icon {
+  font-size: 13px;
+}
+
+.welcome-desc {
+  color: #6b6b6b;
+}
+
+/* =========================
+   NEW: SECTION TITLE WITH ICON
+========================= */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title-icon {
+  font-size: 15px;
+  color: #8b2e2f;
+  text-transform: none;
+}
+
+/* =========================
+   NEW: LATEST LOST / FOUND GRID
+========================= */
+.latest-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 36px;
+}
+
+.latest-column {
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================
+   NEW: MINI CARDS (latest items preview)
+========================= */
+.mini-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mini-card {
+  background: #f9f8f6;
+  border: 1px solid #d6d3cd;
+  border-radius: 14px;
+  padding: 14px 18px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.mini-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.12);
+  border-color: #c8c3ba;
+}
+
+.mini-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mini-card-title {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #1c1c1c;
+}
+
+.mini-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.mini-card-skeleton {
+  gap: 0;
+}
+
+/* =========================
+   NEW: EMPTY STATE VARIANTS
+========================= */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.empty-state-icon {
+  font-size: 20px;
+  color: #b3a89c;
+}
+
+.empty-state-compact {
+  padding: 20px;
+  font-size: 13px;
+}
+
+/* =========================
+   NEW: STAT CARD POLISH
+========================= */
+.stat-card {
+  cursor: default;
+}
+
+/* =========================
+   RESPONSIVE ADDITIONS
+========================= */
+@media (max-width: 900px) {
+  .latest-grid {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+}
+
+@media (max-width: 600px) {
+  .latest-grid {
+    gap: 18px;
+    margin-bottom: 28px;
+  }
+
+  .section-title {
+    flex-wrap: wrap;
+  }
+}
+
+/* =========================
+   V2: SECTION SPACING
+   Generous, consistent rhythm between every dashboard block.
+========================= */
+.section-title {
+  margin-top: 6px;
+}
+
+.stats-grid {
+  margin-bottom: 44px;
+}
+
+.actions-grid {
+  margin-bottom: 48px;
+}
+
+.latest-grid {
+  margin-bottom: 44px;
+}
+
+.activity-section {
+  margin-bottom: 44px;
+}
+
+.activity-section:last-child {
+  margin-bottom: 8px;
+}
+
+/* =========================
+   V2: STAT CARDS — bigger icons, stronger type, helper text
+========================= */
+.stat-card {
+  padding: 24px 24px;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  border-radius: 14px;
+  font-size: 26px;
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.stat-value {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.stat-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #74706a;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.stat-helper {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #3f7a4d;
+}
+
+.stat-helper svg {
+  font-size: 13px;
+}
+
+.stat-helper-neutral {
+  color: #8a857c;
+}
+
+/* =========================
+   V2: COLLAPSIBLE REPORT FORM CARDS
+========================= */
+.action-card {
+  padding: 22px 26px 26px;
+}
+
+.action-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 0;
+}
+
+.action-card-heading-toggle {
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 0;
+  border-radius: 10px;
+  transition: opacity 0.15s ease;
+}
+
+.action-card-heading-toggle:hover {
+  opacity: 0.85;
+}
+
+.action-card-heading-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.action-card-heading-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.action-card-heading-text h3 {
+  font-size: 17px;
+}
+
+.action-card-subtext {
+  font-size: 12px;
+  color: #8a857c;
+  font-weight: 500;
+}
+
+.action-card-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  border: 1px solid #d6d3cd;
+  background: #ffffff;
+  color: #8b2e2f;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.action-card-toggle-btn:hover {
+  background: #fdf6f6;
+  border-color: #8b2e2f;
+  transform: translateY(-1px);
+}
+
+/* Smoothly collapses the form body via max-height rather than unmounting it,
+   so all inputs/state remain intact and functional while hidden. */
+.action-card-body {
+  overflow: hidden;
+  transition: max-height 0.32s ease, opacity 0.25s ease, margin-top 0.25s ease;
+}
+
+.action-card-body-open {
+  max-height: 2400px;
+  opacity: 1;
+  margin-top: 20px;
+}
+
+.action-card-body-closed {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  pointer-events: none;
+}
+
+/* =========================
+   V2: UPLOAD BOX ILLUSTRATION
+========================= */
+.upload-box {
+  min-height: 180px;
+}
+
+.upload-box-illustration {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+}
+
+.upload-box-illustration-back {
+  position: absolute;
+  font-size: 42px;
+  color: #e6ded7;
+  top: 2px;
+  left: 6px;
+}
+
+.upload-box-illustration-front {
+  position: absolute;
+  font-size: 26px;
+  color: #8b2e2f;
+  bottom: 2px;
+  right: 4px;
+  background: #ffffff;
+  border-radius: 50%;
+  padding: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+/* =========================
+   V2: LATEST ITEMS — modern cards with thumbnail
+========================= */
+.latest-column-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #2f4858;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 14px;
+}
+
+.latest-column-icon {
+  font-size: 14px;
+}
+
+.latest-column-icon-lost {
+  color: #8b2e2f;
+}
+
+.latest-column-icon-found {
+  color: #2f4858;
+}
+
+.item-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.item-card {
+  background: #f9f8f6;
+  border: 1px solid #d6d3cd;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.item-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.14);
+  border-color: #c8c3ba;
+}
+
+.item-card-thumb {
+  position: relative;
+  width: 100%;
+  height: 110px;
+  background: #efede7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.item-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.item-card-thumb-fallback {
+  font-size: 26px;
+  color: #b3a89c;
+}
+
+.item-card-badge {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  padding: 3px 10px;
+}
+
+.item-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px 14px 14px;
+}
+
+.item-card-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #1c1c1c;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: #6b6b6b;
+}
+
+.item-card-skeleton {
+  gap: 10px;
+  padding: 12px 14px;
+}
+
+.skeleton-thumb {
+  width: 100%;
+  height: 90px;
+  border-radius: 10px;
+  margin-bottom: 4px;
+}
+
+/* =========================
+   V2: PENDING CLAIMS — View button
+========================= */
+.claim-card-meta {
+  align-items: center;
+  gap: 14px;
+}
+
+.view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid #8b2e2f;
+  background: #ffffff;
+  color: #8b2e2f;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+.view-btn:hover {
+  background: #8b2e2f;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.view-btn svg {
+  font-size: 13px;
+}
+
+/* =========================
+   V2: RECENT ACTIVITY TIMELINE
+========================= */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: #f9f8f6;
+  border: 1px solid #d6d3cd;
+  border-radius: 16px;
+  padding: 6px 22px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.timeline-item {
+  position: relative;
+  display: flex;
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid #e6e2da;
+}
+
+.timeline-item:last-child {
+  border-bottom: none;
+}
+
+.timeline-dot {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #ffffff;
+  background: #8a857c;
+  margin-top: 2px;
+}
+
+.timeline-dot-lost {
+  background: #8b2e2f;
+}
+
+.timeline-dot-found {
+  background: #2f4858;
+}
+
+.timeline-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.timeline-content-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.timeline-title {
+  font-size: 14px;
+  color: #4a4a4a;
+}
+
+.timeline-title strong {
+  color: #1c1c1c;
+  font-weight: 700;
+}
+
+.timeline-timestamp {
+  font-size: 12px;
+  color: #8a857c;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.timeline-content-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.timeline-item-skeleton .timeline-dot {
+  background: #e3e0d9;
+}
+
+/* =========================
+   V2: EMPTY STATE ICON + TEXT LAYOUT
+   (empty-state already flex column from earlier block; just add gap tweak)
+========================= */
+.empty-state {
+  gap: 10px;
+}
+
+/* =========================
+   V2: RESPONSIVE — item cards, timeline, forms
+========================= */
+@media (max-width: 1024px) {
+  .item-card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .item-card-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .item-card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .timeline {
+    padding: 4px 16px;
+  }
+
+  .timeline-content-top {
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+@media (max-width: 600px) {
+  .item-card-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 18px 18px;
+  }
+
+  .stat-icon {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    font-size: 21px;
+  }
+
+  .stat-value {
+    font-size: 21px;
+  }
+
+  .claim-card-meta {
+    flex-wrap: wrap;
+  }
+
+  .view-btn {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .item-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
