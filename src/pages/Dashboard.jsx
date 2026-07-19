@@ -25,11 +25,9 @@ import {
   FiMenu,
   FiCalendar,
   FiList,
-  FiMapPin,
   FiActivity,
   FiInbox,
   FiArrowUpRight,
-  FiImage,
 } from "react-icons/fi";
 import "./Dashboard.css";
 
@@ -106,11 +104,6 @@ function Dashboard() {
   // ===== Recent activity (combined lost + found for current user) =====
   const [recentActivity, setRecentActivity] = useState([]);
   const [activityLoading, setActivityLoading] = useState(true);
-
-  // ===== Latest Lost / Found items (global, newest 3 each) =====
-  const [latestLost, setLatestLost] = useState([]);
-  const [latestFound, setLatestFound] = useState([]);
-  const [latestLoading, setLatestLoading] = useState(true);
 
   // ===== Pending claims summary (global) =====
   const [pendingClaims, setPendingClaims] = useState([]);
@@ -250,35 +243,6 @@ function Dashboard() {
     }
   }, []);
 
-  // Fetches the newest 3 Lost items and newest 3 Found items (global, read-only preview)
-  const fetchLatestItems = useCallback(async () => {
-    setLatestLoading(true);
-    try {
-      const lostQuery = query(
-        collection(db, "lostItems"),
-        orderBy("createdAt", "desc"),
-        limit(3)
-      );
-      const foundQuery = query(
-        collection(db, "foundItems"),
-        orderBy("createdAt", "desc"),
-        limit(3)
-      );
-
-      const [lostSnap, foundSnap] = await Promise.all([
-        getDocs(lostQuery),
-        getDocs(foundQuery),
-      ]);
-
-      setLatestLost(lostSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-      setLatestFound(foundSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-    } catch (error) {
-      console.error("Failed to fetch latest items:", error);
-    } finally {
-      setLatestLoading(false);
-    }
-  }, []);
-
   // Fetches a small summary of pending claims (status == "pending") across both collections
   const fetchPendingClaims = useCallback(async () => {
     setPendingLoading(true);
@@ -331,9 +295,8 @@ function Dashboard() {
   useEffect(() => {
     fetchStats();
     fetchRecentActivity();
-    fetchLatestItems();
     fetchPendingClaims();
-  }, [fetchStats, fetchRecentActivity, fetchLatestItems, fetchPendingClaims]);
+  }, [fetchStats, fetchRecentActivity, fetchPendingClaims]);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -384,7 +347,6 @@ function Dashboard() {
       // Refresh all dashboard sections so they reflect the new item
       fetchStats();
       fetchRecentActivity();
-      fetchLatestItems();
       fetchPendingClaims();
     } catch (error) {
       console.error(error);
@@ -525,111 +487,6 @@ function Dashboard() {
             onChange={updateField(setFoundItem)}
             onSubmit={submitFoundItem}
           />
-        </div>
-
-        {/* ===== Latest Lost / Found Items ===== */}
-        <h3 className="section-title">Latest Reports</h3>
-
-        <div className="latest-grid">
-          <div className="latest-column">
-            <div className="latest-column-heading">
-              <FiSearch className="latest-column-icon latest-column-icon-lost" />
-              <span>Latest Lost Items</span>
-            </div>
-
-            {latestLoading ? (
-              <div className="item-card-grid">
-                {[1, 2, 3].map((n) => (
-                  <div className="item-card item-card-skeleton" key={n}>
-                    <div className="skeleton-line skeleton-thumb" />
-                    <div className="skeleton-line skeleton-line-title" />
-                    <div className="skeleton-line skeleton-line-sub" />
-                  </div>
-                ))}
-              </div>
-            ) : latestLost.length === 0 ? (
-              <div className="empty-state empty-state-compact">
-                <FiSearch className="empty-state-icon" />
-                <span>No lost items reported yet.</span>
-              </div>
-            ) : (
-              <div className="item-card-grid">
-                {latestLost.map((it) => (
-                  <div className="item-card" key={it.id}>
-                    <div className="item-card-thumb">
-                      {it.imageUrl ? (
-                        <img src={it.imageUrl} alt={it.title} />
-                      ) : (
-                        <FiImage className="item-card-thumb-fallback" />
-                      )}
-                      <span className="activity-badge activity-badge-lost item-card-badge">
-                        Lost
-                      </span>
-                    </div>
-                    <div className="item-card-body">
-                      <span className="item-card-title">{it.title}</span>
-                      <span className="item-card-meta">
-                        <FiMapPin /> {it.location || "—"}
-                      </span>
-                      <span className="item-card-meta">
-                        <FiCalendar /> {it.date || "—"}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="latest-column">
-            <div className="latest-column-heading">
-              <FiPackage className="latest-column-icon latest-column-icon-found" />
-              <span>Latest Found Items</span>
-            </div>
-
-            {latestLoading ? (
-              <div className="item-card-grid">
-                {[1, 2, 3].map((n) => (
-                  <div className="item-card item-card-skeleton" key={n}>
-                    <div className="skeleton-line skeleton-thumb" />
-                    <div className="skeleton-line skeleton-line-title" />
-                    <div className="skeleton-line skeleton-line-sub" />
-                  </div>
-                ))}
-              </div>
-            ) : latestFound.length === 0 ? (
-              <div className="empty-state empty-state-compact">
-                <FiPackage className="empty-state-icon" />
-                <span>No found items reported yet.</span>
-              </div>
-            ) : (
-              <div className="item-card-grid">
-                {latestFound.map((it) => (
-                  <div className="item-card" key={it.id}>
-                    <div className="item-card-thumb">
-                      {it.imageUrl ? (
-                        <img src={it.imageUrl} alt={it.title} />
-                      ) : (
-                        <FiImage className="item-card-thumb-fallback" />
-                      )}
-                      <span className="activity-badge activity-badge-found item-card-badge">
-                        Found
-                      </span>
-                    </div>
-                    <div className="item-card-body">
-                      <span className="item-card-title">{it.title}</span>
-                      <span className="item-card-meta">
-                        <FiMapPin /> {it.location || "—"}
-                      </span>
-                      <span className="item-card-meta">
-                        <FiCalendar /> {it.date || "—"}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
 
         {/* ===== Pending Claims Summary ===== */}
